@@ -7,6 +7,12 @@ const pageData = {
     '/index.html': {
         title: 'Main Page',
     },
+    '/lesson3.html': {
+        title: 'Lesson 3',
+    },
+    '/lesson4.html': {
+        title: 'Lesson 4',
+    },
     '/404.html': {
         title: 'Sub Page',
     },
@@ -26,6 +32,8 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 main: './index.html',
+                lesson3: './lesson3.html',
+                lesson4: './lesson4.html',
                 404: './404.html',
             },
         },

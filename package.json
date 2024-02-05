@@ -14,5 +14,10 @@
     "vite": "^4.4.9",
     "vite-plugin-handlebars": "^1.6.0",
     "vite-plugin-live-reload": "^3.0.2"
+  },
+  "dependencies": {
+    "gsap": "3.12",
+    "lil-gui": "^0.19.1",
+    "three": "^0.159.0"
   }
 }
