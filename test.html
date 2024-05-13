@@ -1,0 +1,20 @@
+{{#> layout/default }}
+<main class="main">
+    <model-viewer
+        class="viewer"
+        src="/models/Jr.glb"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        tone-mapping="commerce"
+        shadow-intensity="1"
+        environment-image="b4k.hdr"
+    >
+        <button slot="ar-button" id="ar-button"></button>
+    </model-viewer>
+</main>
+<script
+    type="module"
+    src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"
+></script>
+{{/ layout/default }}

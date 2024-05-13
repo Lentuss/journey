@@ -1,3 +1,4 @@
+import glsl from 'vite-plugin-glsl'
 import { defineConfig } from 'vite';
 import handlebars from 'vite-plugin-handlebars';
 import path from 'path';
@@ -27,6 +28,7 @@ export default defineConfig({
             },
         }),
         liveReload(path.resolve(__dirname, 'src/**/*.hbs')),
+        glsl()
     ],
     build: {
         rollupOptions: {
@@ -34,6 +36,7 @@ export default defineConfig({
                 main: './index.html',
                 lesson3: './lesson3.html',
                 lesson4: './lesson4.html',
+                lesson27: './lesson27.html',
                 404: './404.html',
             },
         },

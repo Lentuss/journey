@@ -5,6 +5,14 @@ import GUI from 'lil-gui'
 /**
  * Base
  */
+
+//Texture loader
+
+const textureLoader = new THREE.TextureLoader()
+const bakedShadow = textureLoader.load('/textures/bakedShadow.jpg')
+const simpleShadow = textureLoader.load('/textures/simpleShadow.jpg')
+bakedShadow.colorSpace = THREE.SRGBColorSpace
+
 // Debug
 const gui = new GUI()
 
@@ -48,8 +56,6 @@ directionalLight.shadow.camera.far = 6
 
 // directionalLight.shadow.radius = 10 //размытие тени
 
-console.log(directionalLight.shadow.camera)
-
 const directionalLightCameraHelper = new THREE.CameraHelper(directionalLight.shadow.camera)
 directionalLightCameraHelper.visible = false
 scene.add(directionalLightCameraHelper)
@@ -72,6 +78,22 @@ spotLight.shadow.mapSize.height = 1024 * 2
 spotLight.shadow.camera.near = 1
 spotLight.shadow.camera.far = 3
 
+//point light
+
+const pointLight = new THREE.PointLight(0xffffff, 2.7)
+pointLight.castShadow = true
+pointLight.position.set(-1, 1, 0)
+pointLight.shadow.mapSize.width = 1024
+pointLight.shadow.mapSize.height = 1024
+pointLight.shadow.camera.near = 0.1
+pointLight.shadow.camera.far = 5
+scene.add(pointLight)
+
+const pointLightCameraHelper = new THREE.CameraHelper(pointLight.shadow.camera)
+pointLightCameraHelper.visible = false
+scene.add(pointLightCameraHelper)
+
+
 /**
  * Materials
  */
@@ -93,6 +115,7 @@ sphere.castShadow = true
 const plane = new THREE.Mesh(
     new THREE.PlaneGeometry(5, 5),
     material
+    // new THREE.MeshBasicMaterial({ map: bakedShadow })
 )
 plane.rotation.x = - Math.PI * 0.5
 plane.position.y = - 0.5
@@ -102,6 +125,16 @@ plane.receiveShadow = true
 
 scene.add(sphere, plane)
 
+const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(),
+    new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        alphaMap: simpleShadow
+    }))
+
+shadowPlane.rotation.x = - Math.PI * 0.5
+shadowPlane.position.y = plane.position.y + 0.01
+scene.add(shadowPlane)
 /**
  * Sizes
  */
@@ -147,7 +180,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-renderer.shadowMap.enabled = true
+renderer.shadowMap.enabled = false
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
 /**
  * Animate
@@ -156,6 +189,17 @@ const clock = new THREE.Clock()
 
 const tick = () => {
     const elapsedTime = clock.getElapsedTime()
+
+    //update sphere
+    sphere.position.x = Math.cos(elapsedTime) * 1.5;
+    sphere.position.z = Math.sin(elapsedTime) * 1.5;
+    sphere.position.y = Math.abs(Math.sin(elapsedTime * 3));
+
+    //update shadowPlane
+    shadowPlane.position.x = Math.cos(elapsedTime) * 1.5;
+    shadowPlane.position.z = Math.sin(elapsedTime) * 1.5;
+    shadowPlane.material.opacity = 1 - (sphere.position.y * 0.3)
+
 
     // Update controls
     controls.update()
