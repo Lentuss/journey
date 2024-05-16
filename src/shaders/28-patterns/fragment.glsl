@@ -170,10 +170,10 @@ void main()
         // float strength = distance(vUv, vec2(0.5));//round gradient with centered start
     
     //pattern 28
-        // float strength =1.0-distance(vUv, vec2(0.5));//round gradient with centered start inverted
+        // float strength =1.0-distance(vUv, vec2(0.5));//round gradient with centered start inverted 
     
     //pattern 29
-        // float strength =0.05/distance(vUv, vec2(0.8));//round like sun
+        // float strength =0.05/distance(vUv, vec2(0.8));//round like sun(like bright dot)
         
     //pattern 30
     // vec2 lightUv = vec2(vUv.x*0.2+0.4, 

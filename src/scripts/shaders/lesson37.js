@@ -35,6 +35,11 @@ window.addEventListener('resize', () => {
     sizes.height = window.innerHeight
     sizes.pixelRatio = Math.min(window.devicePixelRatio, 2)
 
+    //update material
+
+    material.uniforms.uResolution.value.set(sizes.width * sizes.pixelRatio,
+        sizes.height * sizes.pixelRatio,)
+
     // Update camera
     camera.aspect = sizes.width / sizes.height
     camera.updateProjectionMatrix()
@@ -82,7 +87,9 @@ gui
  * Material
  */
 const materialParameters = {}
-materialParameters.color = '#ff794d'
+materialParameters.color = '#bf980d'
+materialParameters.shadowColor = '#afc8f0'
+materialParameters.lightColor = '#e5fff0'
 
 const material = new THREE.ShaderMaterial({
     vertexShader: halftoneVertexShader,
@@ -91,6 +98,14 @@ const material = new THREE.ShaderMaterial({
     {
         uColor: new THREE.Uniform(new THREE.Color(materialParameters.color)),
         uShadeColor: new THREE.Uniform(new THREE.Color(materialParameters.shadeColor)),
+        uResolution: new THREE.Uniform(new THREE.Vector2(
+            sizes.width * sizes.pixelRatio,
+            sizes.height * sizes.pixelRatio,
+        )),
+        uShadowRepetitions: new THREE.Uniform(100.0),
+        uShadowColor: new THREE.Uniform(new THREE.Color(materialParameters.shadowColor)),
+        uLightRepetitions: new THREE.Uniform(130.0),
+        uLightColor: new THREE.Uniform(new THREE.Color(materialParameters.lightColor)),
     }
 })
 
@@ -98,6 +113,18 @@ gui
     .addColor(materialParameters, 'color')
     .onChange(() => {
         material.uniforms.uColor.value.set(materialParameters.color)
+    })
+gui.add(material.uniforms.uShadowRepetitions, 'value', 10, 300, 1).name('shadow repetition')
+gui
+    .addColor(materialParameters, 'shadowColor')
+    .onChange(() => {
+        material.uniforms.uShadowColor.value.set(materialParameters.shadowColor)
+    })
+gui.add(material.uniforms.uLightRepetitions, 'value', 10, 300, 1).name('shadow repetition')
+gui
+    .addColor(materialParameters, 'lightColor')
+    .onChange(() => {
+        material.uniforms.uLightColor.value.set(materialParameters.lightColor)
     })
 
 /**

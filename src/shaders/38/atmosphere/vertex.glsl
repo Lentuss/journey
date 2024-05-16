@@ -1,6 +1,5 @@
 uniform float uTime;
 
-varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vPosition;
 
@@ -15,7 +14,6 @@ void main()
     vec3 modelNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
 
     // Varyings
-    vUv = uv;
     vNormal = modelNormal;
     vPosition = modelPosition.xyz;
 }

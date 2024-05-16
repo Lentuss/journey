@@ -42,7 +42,9 @@ window.addEventListener('resize', () => {
     sizes.pixelRatio = Math.min(window.devicePixelRatio, 2)
 
     // Materials
-    particles.material.uniforms.uResolution.value.set(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)
+    if (particles) {
+        particles.material.uniforms.uResolution.value.set(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)
+    }
 
     // Update camera
     camera.aspect = sizes.width / sizes.height
@@ -83,30 +85,126 @@ renderer.setClearColor(debugObject.clearColor)
 /**
  * Particles
  */
-const particles = {}
+let particles = null
 
-// Geometry
-particles.geometry = new THREE.SphereGeometry(3)
+//Load models
+gltfLoader.load('./models.glb', (gltf) => {
+    particles = {}
+    particles.index = 1
 
-// Material
-particles.material = new THREE.ShaderMaterial({
-    vertexShader: particlesVertexShader,
-    fragmentShader: particlesFragmentShader,
-    uniforms:
-    {
-        uSize: new THREE.Uniform(0.4),
-        uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio))
+    //positions
+    const positions = gltf.scene.children.map(child => child.geometry.attributes.position)
+    particles.maxCount = 0
+    for (const position of positions) {
+        if (position.count > particles.maxCount) {
+            particles.maxCount = position.count
+        }
     }
-})
+    particles.positions = []
+    for (const position of positions) {
+        const originalArray = position.array
+        const newArray = new Float32Array(particles.maxCount * 3)
 
-// Points
-particles.points = new THREE.Points(particles.geometry, particles.material)
-scene.add(particles.points)
+        for (let i = 0; i < particles.maxCount; i++) {
+            const i3 = i * 3
+
+            if (i3 < originalArray.length) {
+                newArray[i3] = originalArray[i3]
+                newArray[i3 + 1] = originalArray[i3 + 1]
+                newArray[i3 + 2] = originalArray[i3 + 2]
+            } else {
+                const randomIndex = Math.floor(position.count * Math.random()) * 3
+
+                newArray[i3] = originalArray[randomIndex]
+                newArray[i3 + 1] = originalArray[randomIndex + 1]
+                newArray[i3 + 2] = originalArray[randomIndex + 2]
+            }
+        }
+        particles.positions.push(new THREE.Float32BufferAttribute(newArray, 3))
+    }
+
+    // Geometry
+    particles.geometry = new THREE.BufferGeometry(3)
+
+    const sizesArray = new Float32Array(particles.maxCount)
+    for (let i = 0; i < particles.maxCount; i++) {
+        sizesArray[i] = Math.random()
+    }
+
+    particles.geometry.setAttribute('position', particles.positions[particles.index])
+    particles.geometry.setAttribute('aPositionTarget', particles.positions[3])
+    particles.geometry.setAttribute('aSize', new THREE.BufferAttribute(sizesArray, 1))
+    // particles.geometry.setIndex(null)//have sense to delete on embed three geometry, not model by blender
+
+
+    // Material
+    // Material
+    particles.colorA = '#ff00ea'
+    particles.colorB = '#0091ff'
+
+    particles.material = new THREE.ShaderMaterial({
+        vertexShader: particlesVertexShader,
+        fragmentShader: particlesFragmentShader,
+        blending: THREE.AdditiveBlending,//important
+        depthWrite: false,//to fix not transparent edges
+        uniforms:
+        {
+            uSize: new THREE.Uniform(0.3),
+            uProgress: new THREE.Uniform(0.0),
+            uTime: new THREE.Uniform(0.0),
+            uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
+            uColorA: new THREE.Uniform(new THREE.Color(particles.colorA)),
+            uColorB: new THREE.Uniform(new THREE.Color(particles.colorB)),
+        }
+    })
+
+    //morph
+
+    particles.morph = (index) => {
+        // Update attributes
+        particles.geometry.attributes.position = particles.positions[particles.index]
+        particles.geometry.attributes.aPositionTarget = particles.positions[index]
+
+        // Animate uProgress
+        gsap.fromTo(
+            particles.material.uniforms.uProgress,
+            { value: 0 },
+            { value: 1, duration: 3, ease: 'linear' }
+        )
+
+        particles.index = index
+    }
+
+    particles.torus = () => { particles.morph(0) }
+    particles.suzanne = () => { particles.morph(1) }
+    particles.sphere = () => { particles.morph(2) }
+    particles.three = () => { particles.morph(3) }
+
+    //tweaks
+    gui.addColor(particles, 'colorA').onChange(() => { particles.material.uniforms.uColorA.value.set(particles.colorA) })
+    gui.addColor(particles, 'colorB').onChange(() => { particles.material.uniforms.uColorB.value.set(particles.colorB) })
+    gui.add(particles.material.uniforms.uProgress, 'value', 0, 1, 0.01).name('progress').listen()
+    gui.add(particles, 'torus')
+    gui.add(particles, 'suzanne')
+    gui.add(particles, 'sphere')
+    gui.add(particles, 'three')
+
+    // Points
+    particles.points = new THREE.Points(particles.geometry, particles.material)
+    particles.points.frustumCulled = false
+    scene.add(particles.points)
+})
 
 /**
  * Animate
  */
+
+const clock = new THREE.Clock()
+
 const tick = () => {
+    const elapsedTime = clock.getElapsedTime()
+    // particles.material.uniforms.uTime.value = elapsedTime
+
     // Update controls
     controls.update()
 
