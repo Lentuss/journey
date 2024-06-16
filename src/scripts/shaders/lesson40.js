@@ -87,6 +87,13 @@ renderer.setClearColor(debugObject.clearColor)
  */
 let particles = null
 
+const customUniforms = {
+    uTime: { value: 0 },
+}
+
+const mat = new THREE.ShaderMaterial()
+
+
 //Load models
 gltfLoader.load('./models.glb', (gltf) => {
     particles = {}
@@ -136,8 +143,6 @@ gltfLoader.load('./models.glb', (gltf) => {
     particles.geometry.setAttribute('aSize', new THREE.BufferAttribute(sizesArray, 1))
     // particles.geometry.setIndex(null)//have sense to delete on embed three geometry, not model by blender
 
-
-    // Material
     // Material
     particles.colorA = '#ff00ea'
     particles.colorB = '#0091ff'
@@ -151,7 +156,7 @@ gltfLoader.load('./models.glb', (gltf) => {
         {
             uSize: new THREE.Uniform(0.3),
             uProgress: new THREE.Uniform(0.0),
-            uTime: new THREE.Uniform(0.0),
+            uTime: new THREE.Uniform(customUniforms.uTime.value),
             uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
             uColorA: new THREE.Uniform(new THREE.Color(particles.colorA)),
             uColorB: new THREE.Uniform(new THREE.Color(particles.colorB)),
@@ -203,7 +208,9 @@ const clock = new THREE.Clock()
 
 const tick = () => {
     const elapsedTime = clock.getElapsedTime()
-    // particles.material.uniforms.uTime.value = elapsedTime
+    if (particles) {
+        particles.material.uniforms.uTime.value = elapsedTime
+    }
 
     // Update controls
     controls.update()
